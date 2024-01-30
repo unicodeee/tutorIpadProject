@@ -1,15 +1,11 @@
 import networkx as nx
 import plotly.graph_objs as go
 
-node_list = ["Thang","B","C","D","E","F","G","H","E"]
-
-from_list = ['B', 'E', 'B', 'B', 'B', 'C', 'C', 'E', 'D', 'Thang', 'E', 'E', 'H', 'B', 'B', 'C', 'Thang', 'Thang', 'G', 'G']
-to_list = ['F', 'D', 'D', 'D', 'D', 'F', 'H', 'C', 'F', 'E', 'B', 'B', 'B', 'E', 'H', 'E', 'B', 'E', 'E', 'Thang']
-
 def draw_graph(node_list, from_list, to_list):
-    G = nx.Graph()
+    G = nx.DiGraph()
     for i in range(len(node_list)):
         G.add_node(node_list[i])
+    for i in range(len(from_list)):
         G.add_edges_from([(from_list[i], to_list[i])])
 
 
@@ -20,7 +16,7 @@ def draw_graph(node_list, from_list, to_list):
     edge_trace = go.Scatter(
         x=[],
         y=[],
-        line=dict(width=5, color='#888'),
+        line=dict(width=2, color='#888'),
         hoverinfo='none',
         mode='lines')
     for edge in G.edges():

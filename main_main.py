@@ -7,7 +7,6 @@ folderName = r"data/ASC Individual_SP2024.xlsx"
 
 # read by default 1st sheet of an excel file
 dataframes = pd.read_excel(folderName, sheet_name=None,  header=2, nrows=14, usecols="B:F")
-# dataframe2 = pd.read_excel(folderName, header=2, index_col=None, nrows=14, usecols="A:F")
 retired_tutors = ["Alexandra", "Arham", "Ariel", "Cheryl", "Cliff", "Frank", "Helen", "Keidy", "Khadijah", "Ha", "Huong", "Toey", "Omar"]
 def conflicts(df1, df2, sheet_name1, sheet_name2):
     for index, row in df1.iterrows():
@@ -41,12 +40,18 @@ ipads = {
 }
 
 MAX_IPAD = 14
+MAX_TUTORS_FOR_ONE_IPAD = 5
 
 tutors = dataframes.keys()
 print(tutors)
 ipad_pointer = 1 # plan to move up if ipad is full, but i'm too lazy to implement
 
-MAX_TUTORS_FOR_ONE_IPAD = 5
+#%%
+
+node_list = []
+from_list = []
+to_list = []
+
 
 AT_LEAST_ONE_TUTOR_HAS_NO_IPAD = True
 while AT_LEAST_ONE_TUTOR_HAS_NO_IPAD:
@@ -66,7 +71,8 @@ while AT_LEAST_ONE_TUTOR_HAS_NO_IPAD:
         11: [],
         12: [],
         13: [],
-        14: []
+        14: [],
+        15: []
     }
 
 
@@ -89,14 +95,13 @@ while AT_LEAST_ONE_TUTOR_HAS_NO_IPAD:
 
     random_tutors = d_shuffled.items()
 
-    # random_tutors = dataframes.items()
-    # random.seed(random.randint(0, 200))
-    # random_tutors = dataframes.items()
-    # random.shuffle(dataframes.items())
 
 
+    tutors_this_sem = {key: value for key, value in dataframes.items() if (lambda k: k not in retired_tutors)(key)}
 
-    for tutor, dataframe in reversed(random_tutors):
+    node_list = list(tutors_this_sem.keys())
+
+    for tutor, schedule in reversed(random_tutors):
         if tutor in retired_tutors:
             continue
         current_ipad = ipad_pointer
@@ -106,12 +111,18 @@ while AT_LEAST_ONE_TUTOR_HAS_NO_IPAD:
                 break
             elif len(ipads[current_ipad]) < MAX_TUTORS_FOR_ONE_IPAD:  #
                 AVAILABLE_IPAD = True
-                for t in ipads[current_ipad]:
-                    df = dataframes[t]
-                    if conflicts(df, dataframe, t, tutor):
+                for already_assigned_tutor in ipads[current_ipad]:
+                    df = dataframes[already_assigned_tutor]
+                    if conflicts(df, schedule, already_assigned_tutor, tutor):
                         AVAILABLE_IPAD = False
                         current_ipad += 1
                         break
+                    else:
+
+                        tempt = sorted((already_assigned_tutor, tutor))
+                        from_list.append(tempt[0])
+                        to_list.append(tempt[1])
+
                 if AVAILABLE_IPAD:
                     ipads[current_ipad].append(tutor)
                     break
@@ -121,35 +132,15 @@ while AT_LEAST_ONE_TUTOR_HAS_NO_IPAD:
                 print(f"ipad is full for {tutor}")
 
     print(ipads)
-    # for sheet_name, dataframe in dataframes.items():
-    #     # dataframe.drop(columns=["Time"])
-    #     if sheet_name == "Arham" or sheet_name == "Thang":
-    #         print(sheet_name)
-    #         print(dataframe)
-    #
 
+    AT_LEAST_ONE_TUTOR_HAS_NO_IPAD = True
 
-    # print("________________________________________________________________________________________")
-    #
-    # # for testing
-    # sheet_name1 = "Suong"
-    # sheet_name2 = "Preston"
-    #
-    #
-    # df1 = dataframes[sheet_name1]
-    # df2 = dataframes[sheet_name2]
-    # print(dataframes[sheet_name1])
-    # print(dataframes[sheet_name2])
-    #
-    # print(f"{sheet_name1} vs {sheet_name2}is conflict: ", conflicts(df1, df2, sheet_name1, sheet_name2))
-    # print("_____________________________________________________________________________________________________")
+    import testNewGraph as plot
+
+    plot.draw_graph(node_list, from_list, to_list)
 
 
 
-    # exportDataFrame = pd.DataFrame.from_dict(ipads, orient='index')
-    # exportDataFrame = exportDataFrame.T
-    # print(exportDataFrame)
-    # exportDataFrame.to_excel("Finalize_Ipad_Assigning_Form_v2.xlsx")
 
     #%%
 
@@ -174,7 +165,14 @@ while AT_LEAST_ONE_TUTOR_HAS_NO_IPAD:
             print(f"{tutor} has no ipad")
         # if tutor not in ipads.values():
 
+    AT_LEAST_ONE_TUTOR_HAS_NO_IPAD = True
 
+
+#%%
+
+import testNewGraph as plot
+
+plot.draw_graph(node_list, from_list, to_list)
 
 #%% Export excel file
 
@@ -189,7 +187,11 @@ ipads = {k: v + [np.nan] * (max_len - len(v)) for k, v in ipads.items()}
 exportDataFrame = pd.DataFrame.from_dict(ipads)
 exportDataFrame = exportDataFrame.T
 print(exportDataFrame)
-exportDataFrame.to_excel("Finalize_Ipad_Assigning_Form_v2.xlsx")
+exportDataFrame.to_excel("/results/Finalize_Ipad_Assigning_Form_v2.xlsx")
+
+# %%
+
+
 
 
 
